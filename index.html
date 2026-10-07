@@ -4,30 +4,43 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Registro de Serviços</title>
+<script>try{var t=localStorage.getItem('rs-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
 :root{
  --bg:#070b14;--panel:rgba(16,24,40,.72);--panel2:rgba(255,255,255,.04);--line:rgba(120,160,255,.16);
  --ink:#e6edf7;--mute:#8794ab;--acc:#22d3ee;--acc2:#6366f1;--ok:#34d399;--bad:#fb7185;
  --mono:'JetBrains Mono','Cascadia Code',ui-monospace,Consolas,monospace;
  --sw:68px;--swo:236px;
+ --side-bg:rgba(8,13,26,.92);--hover:rgba(255,255,255,.09);--hover-soft:rgba(255,255,255,.04);
+ --opt-bg:#0d1424;--toast-bg:#0d1424;--grid-line:rgba(120,160,255,.05);--glow1:rgba(99,102,241,.22);--glow2:rgba(34,211,238,.16);
+ --welcome-bg:#050810;--on-ink:#fff;--shadow:rgba(0,0,0,.45);
 }
+html[data-theme="light"]{
+ --bg:#eef2f9;--panel:rgba(255,255,255,.88);--panel2:rgba(15,23,42,.045);--line:rgba(30,50,110,.17);
+ --ink:#0f172a;--mute:#5a6780;--acc:#0891b2;--acc2:#4f46e5;--ok:#059669;--bad:#e11d48;
+ --side-bg:rgba(255,255,255,.93);--hover:rgba(15,23,42,.08);--hover-soft:rgba(15,23,42,.04);
+ --opt-bg:#fff;--toast-bg:#fff;--grid-line:rgba(30,50,110,.06);--glow1:rgba(99,102,241,.14);--glow2:rgba(8,145,178,.12);
+ --welcome-bg:#f3f6fc;--on-ink:#0f172a;--shadow:rgba(30,50,110,.18);
+}
+html.theme-anim *,html.theme-anim *::before,html.theme-anim *::after{transition:background-color .35s,color .35s,border-color .35s,box-shadow .35s!important}
 *{box-sizing:border-box}
 html{color-scheme:dark}
+html[data-theme="light"]{color-scheme:light}
 body{margin:0;font-family:system-ui,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;min-height:100vh;overflow-x:hidden}
 body::before{content:"";position:fixed;inset:0;z-index:-1;
  background:
-  radial-gradient(900px 500px at 85% -10%,rgba(99,102,241,.22),transparent 60%),
-  radial-gradient(700px 500px at -10% 110%,rgba(34,211,238,.16),transparent 60%),
-  linear-gradient(rgba(120,160,255,.05) 1px,transparent 1px) 0 0/40px 40px,
-  linear-gradient(90deg,rgba(120,160,255,.05) 1px,transparent 1px) 0 0/40px 40px;}
+  radial-gradient(900px 500px at 85% -10%,var(--glow1),transparent 60%),
+  radial-gradient(700px 500px at -10% 110%,var(--glow2),transparent 60%),
+  linear-gradient(var(--grid-line) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,var(--grid-line) 1px,transparent 1px) 0 0/40px 40px;}
 .muted{color:var(--mute)}
 .mono{font-family:var(--mono)}
 
 /* ===== SIDEBAR ===== */
 #side{position:fixed;left:0;top:0;bottom:0;width:var(--sw);z-index:50;display:flex;flex-direction:column;
- background:rgba(8,13,26,.92);backdrop-filter:blur(14px);border-right:1px solid var(--line);
+ background:var(--side-bg);backdrop-filter:blur(14px);border-right:1px solid var(--line);
  transition:width .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s;overflow:hidden}
-#side:hover,body.pinned #side{width:var(--swo);box-shadow:8px 0 40px rgba(0,0,0,.45)}
+#side:hover,body.pinned #side{width:var(--swo);box-shadow:8px 0 40px var(--shadow)}
 body.pinned #side{box-shadow:none}
 .lbl{white-space:nowrap;opacity:0;transform:translateX(-8px);transition:opacity .22s .04s,transform .22s .04s}
 #side:hover .lbl,body.pinned #side .lbl{opacity:1;transform:none}
@@ -47,7 +60,7 @@ body.pinned #pin{background:rgba(34,211,238,.22);box-shadow:0 0 12px rgba(34,211
 .nb::before{content:"";position:absolute;left:0;top:20%;bottom:20%;width:3px;border-radius:3px;background:var(--c);box-shadow:0 0 10px var(--c);transform:scaleY(0);transition:transform .25s}
 .nb:hover{color:var(--ink);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 22%,transparent),transparent)}
 .nb:hover i{transform:scale(1.25) rotate(-6deg);filter:drop-shadow(0 0 8px var(--c))}
-.nb.on{color:#fff;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 30%,transparent),transparent)}
+.nb.on{color:var(--on-ink);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 30%,transparent),transparent)}
 .nb.on::before{transform:scaleY(1)}
 .nb.on i{filter:drop-shadow(0 0 8px var(--c))}
 .nb::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),color-mix(in srgb,var(--c) 40%,transparent),transparent 45%);opacity:0;transition:opacity .3s;pointer-events:none}
@@ -71,9 +84,9 @@ main{max-width:1180px;margin:0 auto;padding:22px 20px 60px}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 input,select,textarea{font:inherit;color:var(--ink);padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);outline:none;transition:border-color .2s,box-shadow .2s}
 input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(34,211,238,.18)}
-select option{background:#0d1424;color:var(--ink)}
+select option{background:var(--opt-bg);color:var(--ink)}
 .btn{font:inherit;padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;transition:transform .15s,background .2s,box-shadow .2s,border-color .2s}
-.btn:hover{background:rgba(255,255,255,.09);border-color:rgba(120,160,255,.4);transform:translateY(-1px)}
+.btn:hover{background:var(--hover);border-color:rgba(120,160,255,.4);transform:translateY(-1px)}
 .btn.pri{background:linear-gradient(135deg,var(--acc),var(--acc2));border:0;color:#04101c;font-weight:700}
 .btn.pri:hover{box-shadow:0 0 20px rgba(34,211,238,.45)}
 .btn.del{color:var(--bad);border-color:rgba(251,113,133,.35)}
@@ -86,6 +99,37 @@ select option{background:#0d1424;color:var(--ink)}
 .chip{--c:var(--acc);padding:6px 13px;border-radius:99px;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);background:transparent;color:var(--ink);font:inherit;font-size:14px;cursor:pointer;transition:all .2s}
 .chip:hover{background:color-mix(in srgb,var(--c) 20%,transparent);box-shadow:0 0 12px color-mix(in srgb,var(--c) 40%,transparent)}
 .chip.on{background:color-mix(in srgb,var(--c) 32%,transparent);box-shadow:0 0 12px color-mix(in srgb,var(--c) 45%,transparent)}
+
+
+/* ===== CATEGORIAS COMO BOTÕES ===== */
+.stage{position:relative}
+.pane[hidden]{display:none}
+.pane.in-fwd{animation:inFwd .38s cubic-bezier(.2,.8,.2,1) both}
+.pane.in-back{animation:inBack .38s cubic-bezier(.2,.8,.2,1) both}
+.pane.out-fwd{animation:outFwd .2s ease-in both;pointer-events:none}
+.pane.out-back{animation:outBack .2s ease-in both;pointer-events:none}
+@keyframes inFwd{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}
+@keyframes inBack{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+@keyframes outFwd{to{opacity:0;transform:translateX(-36px)}}
+@keyframes outBack{to{opacity:0;transform:translateX(36px)}}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.cat{--c:var(--acc);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:128px;padding:16px;border-radius:18px;
+ border:1px solid color-mix(in srgb,var(--c) 40%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--c) 20%,transparent),color-mix(in srgb,var(--c) 4%,transparent));
+ color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:transform .2s,box-shadow .25s,border-color .2s}
+.cat .ci{font-size:32px;line-height:1;transition:transform .25s,filter .25s}
+.cat b{font-size:17px;margin-top:auto}
+.cat small{color:var(--mute);font-size:13px}
+.cat::after{content:"";position:absolute;right:-26px;top:-26px;width:90px;height:90px;border-radius:50%;background:var(--c);opacity:.14;transition:transform .35s,opacity .35s}
+.cat:hover{transform:translateY(-4px);border-color:var(--c);box-shadow:0 10px 30px color-mix(in srgb,var(--c) 30%,transparent)}
+.cat:hover .ci{transform:scale(1.18) rotate(-6deg);filter:drop-shadow(0 0 8px var(--c))}
+.cat:hover::after{transform:scale(1.9);opacity:.2}
+.cat:active{transform:scale(.97)}
+.cat:focus-visible,.backbtn:focus-visible{outline:2px solid var(--c,var(--acc));outline-offset:2px}
+.cat-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.backbtn{--c:var(--acc)}
+.cat-title{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;color:var(--c)}
+.cat-title span{font-size:13px;font-weight:400;color:var(--mute)}
+@media(prefers-reduced-motion:reduce){.pane{animation:none!important}}
 
 /* service cards */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
@@ -138,7 +182,7 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left;font-s
 th{color:var(--mute);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px}
 td.r,th.r{text-align:right}
 td.num{font-family:var(--mono)}
-tbody tr{transition:background .15s}tbody tr:hover{background:rgba(255,255,255,.04)}
+tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
 
 /* kpis & bars */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
@@ -157,8 +201,8 @@ tbody tr{transition:background .15s}tbody tr:hover{background:rgba(255,255,255,.
 /* ===== WELCOME ===== */
 #welcome{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:
  radial-gradient(800px 500px at 50% 35%,rgba(99,102,241,.28),transparent 65%),
- linear-gradient(rgba(120,160,255,.06) 1px,transparent 1px) 0 0/44px 44px,
- linear-gradient(90deg,rgba(120,160,255,.06) 1px,transparent 1px) 0 0/44px 44px,#050810;
+ linear-gradient(var(--grid-line) 1px,transparent 1px) 0 0/44px 44px,
+ linear-gradient(90deg,var(--grid-line) 1px,transparent 1px) 0 0/44px 44px,var(--welcome-bg);
  transition:opacity .6s,transform .6s,visibility .6s}
 #welcome.hide{opacity:0;transform:scale(1.06);visibility:hidden;pointer-events:none}
 #welcome::after{content:"";position:absolute;left:0;right:0;height:140px;top:-140px;background:linear-gradient(transparent,rgba(34,211,238,.07),transparent);animation:scan 6s linear infinite;pointer-events:none}
@@ -183,7 +227,7 @@ tbody tr{transition:background .15s}tbody tr:hover{background:rgba(255,255,255,.
 .go:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 0 44px rgba(34,211,238,.7)}
 .w-foot{margin-top:22px;font-size:13px;color:var(--mute);font-family:var(--mono)}
 
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:#0d1424;border:1px solid var(--acc);color:var(--ink);padding:10px 20px;border-radius:99px;opacity:0;transition:.3s;pointer-events:none;z-index:200;box-shadow:0 0 22px rgba(34,211,238,.35)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--toast-bg);border:1px solid var(--acc);color:var(--ink);padding:10px 20px;border-radius:99px;opacity:0;transition:.3s;pointer-events:none;z-index:200;box-shadow:0 0 22px rgba(34,211,238,.35)}
 .toast.on{opacity:1;transform:translateX(-50%)}
 .printonly{display:none}
 
@@ -191,7 +235,7 @@ tbody tr{transition:background .15s}tbody tr:hover{background:rgba(255,255,255,.
 
 /* ===== IMPRESSÃO (fundo branco) ===== */
 @media print{
- :root{--bg:#fff;--panel:#fff;--panel2:#f4f6fa;--line:#ccd2dd;--ink:#111;--mute:#555;--acc:#0a6e8a;--ok:#0a7a4a}
+ :root,html[data-theme="light"],html[data-theme="dark"]{--bg:#fff;--panel:#fff;--panel2:#f4f6fa;--line:#ccd2dd;--ink:#111;--mute:#555;--acc:#0a6e8a;--ok:#0a7a4a}
  body::before,#side,#welcome,.toast,.noprint{display:none!important}
  #app{padding-left:0!important}
  .card{border:0;padding:0;backdrop-filter:none}
@@ -231,6 +275,7 @@ tbody tr{transition:background .15s}tbody tr:hover{background:rgba(255,255,255,.
   <button class="nb" data-tab="bkp" style="--c:#34d399"><i>💾</i><span class="lbl">Backup e dados</span></button>
  </nav>
  <div class="foot">
+  <button class="nb" id="themeBtn" style="--c:#fbbf24" title="Alternar tema"><i id="themeIcon">🌙</i><span class="lbl" id="themeLbl">Tema escuro</span></button>
   <button class="nb" id="home" style="--c:#f472b6"><i>🏠</i><span class="lbl">Tela inicial</span></button>
   <div class="who lbl" id="who"></div>
  </div>
@@ -248,14 +293,22 @@ tbody tr{transition:background .15s}tbody tr:hover{background:rgba(255,255,255,.
    <button class="btn" id="ontem">Ontem</button>
   </div>
   <div class="muted" style="margin-top:12px;font-size:13px">
-   Selecione um serviço para abrir os campos de observação. Cada quantidade terá sua própria observação.
+   Escolha uma categoria, depois selecione um serviço para abrir os campos de observação. Cada quantidade terá sua própria observação.
   </div>
  </div>
  <div class="split">
   <div class="card">
    <h2>O que foi feito?</h2>
-   <div class="chips" id="chips"></div>
-   <div class="grid" id="grid"></div>
+   <div class="stage">
+    <div class="pane" id="paneCats"><div class="cats" id="cats"></div></div>
+    <div class="pane" id="paneItems" hidden>
+     <div class="cat-head">
+      <button type="button" class="btn backbtn" id="backCats">← Categorias</button>
+      <div class="cat-title" id="catTitle"></div>
+     </div>
+     <div class="grid" id="grid"></div>
+    </div>
+   </div>
   </div>
   <div class="card">
    <h2>Lançado em <span id="diaTxt" class="mono"></span></h2>
@@ -430,8 +483,27 @@ document.querySelectorAll('#side nav .nb').forEach(b=>{
 $('pin').onclick=guard(async e=>{e.stopPropagation();const p=!document.body.classList.contains('pinned');
  document.body.classList.toggle('pinned',p);await Store.update('settings','app',{pinned:p});$('pin').title=p?'Desafixar menu':'Fixar menu'});
 
+
+/* ===================== TEMA ===================== */
+function paintTheme(t){
+ document.documentElement.setAttribute('data-theme',t);
+ $('themeIcon').textContent=t==='light'?'☀️':'🌙';
+ $('themeLbl').textContent=t==='light'?'Tema claro':'Tema escuro';
+ $('themeBtn').title=t==='light'?'Mudar para o tema escuro':'Mudar para o tema claro';
+}
+function currentTheme(){return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark'}
+$('themeBtn').onclick=guard(async()=>{
+ const t=currentTheme()==='light'?'dark':'light';
+ document.documentElement.classList.add('theme-anim');
+ paintTheme(t);
+ try{localStorage.setItem('rs-theme',t)}catch(e){}
+ clearTimeout($('themeBtn')._t);$('themeBtn')._t=setTimeout(()=>document.documentElement.classList.remove('theme-anim'),450);
+ if(Store.get('settings','app'))await Store.update('settings','app',{theme:t});
+});
+paintTheme(currentTheme());
+
 /* ===================== LANÇAR ===================== */
-let filtro='Todos',lastAdded=null;
+let lastAdded=null;
 let selectedService=null;
 const draftQty={};
 const draftNotes={};
@@ -442,9 +514,11 @@ $('hoje').onclick=()=>{$('dia').value=iso(new Date());renderDay()};
 $('ontem').onclick=()=>{const d=new Date();d.setDate(d.getDate()-1);$('dia').value=iso(d);renderDay()};
 
 function syncNotes(id){
+ // lê do DOM apenas se as caixas existirem e tiverem conteúdo (o rascunho principal é mantido por noteChanged)
  const box=$('notes-'+id);
  if(!box)return;
- draftNotes[id]=Array.from(box.querySelectorAll('input')).map(x=>x.value);
+ const ins=box.querySelectorAll('input');
+ if(ins.length)draftNotes[id]=Array.from(ins).map(x=>x.value);
 }
 
 function ensureNotes(id,qty){
@@ -454,16 +528,29 @@ function ensureNotes(id,qty){
  draftNotes[id]=arr;
 }
 
+/* Atualiza as caixas de observação SEM recriar as que já existem.
+   (Antes tudo era recriado com innerHTML a cada clique, o que tirava o foco do campo
+   assim que o botão do mouse era solto.) */
 function renderNotes(id){
  const box=$('notes-'+id);
  if(!box)return;
- syncNotes(id);
  const qty=Math.max(0,Number(draftQty[id]||0));
  ensureNotes(id,qty);
- box.innerHTML=qty?`<div class="obs-title">Observações — ${qty} ${qty===1?'lançamento':'lançamentos'}</div>`+
-   draftNotes[id].map((n,i)=>`<input type="text" maxlength="200" autocomplete="off"
-     placeholder="📝 Observação do lançamento ${i+1}${qty>1?' de '+qty:''}"
-     value="${esc(n)}" oninput="noteChanged('${id}',${i},this.value)">`).join(''):'';
+ if(!qty){box.innerHTML='';return}
+ let title=box.querySelector('.obs-title');
+ if(!title){box.innerHTML='';title=document.createElement('div');title.className='obs-title';box.appendChild(title)}
+ title.textContent=`Observações — ${qty} ${qty===1?'lançamento':'lançamentos'}`;
+ let ins=box.querySelectorAll('input');
+ for(let i=ins.length;i<qty;i++){
+  const inp=document.createElement('input');
+  inp.type='text';inp.maxLength=200;inp.autocomplete='off';inp.value=draftNotes[id][i]||'';
+  inp.addEventListener('input',()=>noteChanged(id,i,inp.value));
+  inp.addEventListener('click',e=>e.stopPropagation());
+  box.appendChild(inp);
+ }
+ ins=box.querySelectorAll('input');
+ for(let i=ins.length-1;i>=qty;i--)ins[i].remove();
+ box.querySelectorAll('input').forEach((inp,i)=>{inp.placeholder=`📝 Observação do lançamento ${i+1}${qty>1?' de '+qty:''}`});
 }
 
 function noteChanged(id,index,value){
@@ -475,31 +562,47 @@ function qtyChanged(id){
  const i=$('q-'+id);
  const qty=Math.max(0,parseInt(i.value)||0);
  draftQty[id]=qty;
- i.value=qty;
- if(selectedService!==id)selectedService=id;
- document.querySelectorAll('.svc.selected').forEach(x=>x.classList.remove('selected'));
- const card=$('c-'+id);if(card)card.classList.add('selected');
+ if(i.value!==''&&String(qty)!==i.value)i.value=qty;   // não reescreve enquanto a pessoa digita
+ markSelected(id);
  renderNotes(id);
 }
 
-function selectService(id){
- if(selectedService&&selectedService!==id)syncNotes(selectedService);
+function markSelected(id){
  selectedService=id;
- document.querySelectorAll('.svc.selected').forEach(x=>x.classList.remove('selected'));
- const card=$('c-'+id);
- if(card)card.classList.add('selected');
+ document.querySelectorAll('.svc.selected').forEach(x=>{if(x.id!=='c-'+id)x.classList.remove('selected')});
+ const card=$('c-'+id);if(card)card.classList.add('selected');
+}
+
+function selectService(id){
+ if(selectedService===id&&$('c-'+id)&&$('c-'+id).classList.contains('selected'))return;  // já selecionado: não mexe em nada
+ markSelected(id);
  const input=$('q-'+id);
  if(input)input.value=Math.max(0,Number(draftQty[id]||0));
  renderNotes(id);
 }
 
+const CAT_ICON={'Reparo':'🔧','Wi-Fi':'📶','Upgrade':'⬆️','Instalação':'🛠️','Recolha':'📦','Mudança':'🔄','Outros':'🧩'};
+let openCat=null,navBusy=false;
+
 function renderGrid(){
  const sv=Store.all('services');
- const cats=['Todos',...Object.keys(CATS).filter(c=>sv.some(s=>s.category===c))];
- if(!cats.includes(filtro))filtro='Todos';
- $('chips').innerHTML=cats.map(c=>`<button class="chip ${c===filtro?'on':''}" style="--c:${c==='Todos'?'#22d3ee':color(c)}" onclick="setFiltro('${c}')">${c}</button>`).join('');
- const lista=sv.filter(s=>filtro==='Todos'||s.category===filtro);
- $('grid').innerHTML=lista.length?lista.map((s,i)=>{
+ const cats=Object.keys(CATS).filter(c=>sv.some(s=>s.category===c));
+ if(openCat&&!cats.includes(openCat))openCat=null;
+ // botões de categoria
+ $('cats').innerHTML=cats.length?cats.map(c=>{
+  const n=sv.filter(s=>s.category===c).length;
+  return `<button type="button" class="cat" style="--c:${color(c)}" onclick="openCategory('${c}')">
+   <span class="ci">${CAT_ICON[c]||'🔹'}</span><b>${esc(c)}</b><small>${n} ${n===1?'serviço':'serviços'}</small></button>`}).join('')
+  :'<div class="empty">Nenhum serviço cadastrado. Adicione na aba "Serviços e valores".</div>';
+ // itens da categoria aberta
+ $('paneCats').hidden=!!openCat;
+ $('paneItems').hidden=!openCat;
+ if(!openCat)return;
+ $('catTitle').style.setProperty('--c',color(openCat));
+ $('backCats').style.setProperty('--c',color(openCat));
+ const lista=sv.filter(s=>s.category===openCat);
+ $('catTitle').innerHTML=`${CAT_ICON[openCat]||'🔹'} ${esc(openCat)} <span>${lista.length} ${lista.length===1?'serviço':'serviços'}</span>`;
+ $('grid').innerHTML=lista.map((s,i)=>{
   const qty=Math.max(0,Number(draftQty[s.id]||0));
   const selected=s.id===selectedService;
   ensureNotes(s.id,qty);
@@ -515,16 +618,41 @@ function renderGrid(){
       oninput="event.stopPropagation();qtyChanged('${s.id}')">
     <button type="button" onclick="event.stopPropagation();step('${s.id}',1)">+</button>
    </div>
-   <div class="obs-list" id="notes-${s.id}"></div>
+   <div class="obs-list" id="notes-${s.id}" onclick="event.stopPropagation()"></div>
    <button type="button" class="add" onclick="event.stopPropagation();addEntry('${s.id}')">Adicionar</button>
   </div>`;
- }).join(''):'<div class="empty">Nenhum serviço nesta categoria.</div>';
+ }).join('');
  lista.forEach(s=>renderNotes(s.id));
 }
-function setFiltro(c){filtro=c;renderGrid()}
+
+/* transição entre a tela de categorias e a lista de itens */
+function swapPanes(fromEl,toEl,dir){
+ if(navBusy)return;navBusy=true;
+ fromEl.classList.add(dir==='fwd'?'out-fwd':'out-back');
+ setTimeout(()=>{
+  fromEl.classList.remove('out-fwd','out-back');fromEl.hidden=true;
+  toEl.hidden=false;toEl.classList.remove('in-fwd','in-back');void toEl.offsetWidth;
+  toEl.classList.add(dir==='fwd'?'in-fwd':'in-back');
+  setTimeout(()=>{toEl.classList.remove('in-fwd','in-back');navBusy=false},400);
+ },190);
+}
+function openCategory(c){
+ if(navBusy)return;
+ openCat=c;renderGrid();
+ // renderGrid já mostra o painel de itens; refaz o estado para animar a troca
+ $('paneItems').hidden=true;$('paneCats').hidden=false;
+ swapPanes($('paneCats'),$('paneItems'),'fwd');
+}
+function closeCategory(){
+ if(navBusy||!openCat)return;
+ if(selectedService)syncNotes(selectedService);
+ swapPanes($('paneItems'),$('paneCats'),'back');
+ setTimeout(()=>{openCat=null;$('paneCats').hidden=false},195);
+}
+$('backCats').onclick=closeCategory;
 
 function step(id,d){
- selectService(id);
+ markSelected(id);
  const qty=Math.max(0,(parseInt(draftQty[id])||0)+d);
  draftQty[id]=qty;
  const i=$('q-'+id);if(i)i.value=qty;
@@ -750,6 +878,8 @@ function renderAll(){renderGrid();renderDay();renderRel();renderCat();renderInfo
 function applySettings(){
  const s=Store.get('settings','app')||{};
  document.body.classList.toggle('pinned',!!s.pinned);$('pin').title=s.pinned?'Desafixar menu':'Fixar menu';
+ let saved=null;try{saved=localStorage.getItem('rs-theme')}catch(e){}
+ const th=saved||s.theme;if(th==='light'||th==='dark')paintTheme(th);
 }
 async function ensureBase(){
  if(!Store.get('settings','app'))await Store.add('settings',{id:'app',pinned:false});
