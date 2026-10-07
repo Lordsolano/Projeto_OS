@@ -772,4 +772,165 @@ function dataRel(){
 function renderRel(){
  const{a,b,es}=dataRel();
  $('perTxt').textContent=(a.startsWith('0000')||b.startsWith('9999'))?'Período personalizado':`Período: ${br(a)} a ${br(b)}`+($('busca').value.trim()?` · filtro: "${$('busca').value.trim()}"`:'');
- const tot=es.reduce((s,e)=>s+sub(e),0),q=es.reduce((s,e)=>s+e.qty,
+ const tot=es.reduce((s,e)=>s+sub(e),0),q=es.reduce((s,e)=>s+e.qty,0);
+ const dias={};es.forEach(e=>{const d=dias[e.date]=dias[e.date]||{q:0,v:0};d.q+=e.qty;d.v+=sub(e)});
+ const nd=Object.keys(dias).length,int=n=>String(Math.round(n));
+ anim($('kTotal'),tot);anim($('kQtd'),q,int);anim($('kDias'),nd,int);anim($('kMedia'),nd?tot/nd:0);
+ const cat={};es.forEach(e=>{const c=e.category||'Outros';cat[c]=(cat[c]||0)+sub(e)});
+ const cl=Object.entries(cat).sort((x,y)=>y[1]-x[1]),mx=cl.length?cl[0][1]:1;
+ $('bars').innerHTML=cl.length?cl.map(([c,v])=>`<div class="bar" style="--c:${color(c)}"><span class="bl">${esc(c)}</span><div class="bt"><div class="bf" data-w="${(v/mx*100).toFixed(1)}"></div></div><span class="bv">${brl(v)}</span></div>`).join(''):'<div class="empty">Sem lançamentos no período.</div>';
+ requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('.bf').forEach(f=>f.style.width=f.dataset.w+'%')));
+ $('tDias').innerHTML=nd?Object.keys(dias).sort().map(d=>`<tr><td>${br(d)} <span class="muted">(${dow(d)})</span></td><td class="r num">${dias[d].q}</td><td class="r num">${brl(dias[d].v)}</td></tr>`).join('')+`<tr><td><b>Total</b></td><td class="r num"><b>${q}</b></td><td class="r num"><b>${brl(tot)}</b></td></tr>`:'<tr><td colspan="3" class="empty">Sem lançamentos no período.</td></tr>';
+ const sv={};es.forEach(e=>{const k=e.name+'|'+e.value;(sv[k]=sv[k]||{icon:e.icon,name:e.name,value:e.value,q:0}).q+=e.qty});
+ const ls=Object.values(sv).sort((x,y)=>y.q*y.value-x.q*x.value);
+ $('tSvc').innerHTML=ls.length?ls.map(s=>`<tr><td>${esc(s.icon)} ${esc(s.name)}</td><td class="r num">${s.q}</td><td class="r num">${brl(s.value)}</td><td class="r num">${brl(Math.round(s.q*s.value*100)/100)}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">Sem lançamentos no período.</td></tr>';
+ $('tDet').innerHTML=es.length?es.map(e=>`<tr><td class="num">${br(e.date)}</td><td>${esc(e.icon)} ${esc(e.name)}</td><td class="r num">${e.qty}</td><td>${esc(e.note||'')}</td><td class="r num">${brl(sub(e))}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">Sem lançamentos no período.</td></tr>';
+}
+$('imprimir').onclick=()=>window.print();$('csv').onclick=()=>{
+ const{es}=dataRel();if(!es.length){toast('Nada para exportar');return}
+ const f=n=>n.toFixed(2).replace('.',',');
+ const linhas=[['Data','Categoria','Serviço','Quantidade','Valor unitário','Subtotal','Observação']]
+  .concat(es.map(e=>[br(e.date),e.category||'',e.name,e.qty,f(e.value),f(sub(e)),e.note||'']));
+ const txt='\ufeff'+linhas.map(l=>l.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+ baixar(txt,'servicos-'+iso(new Date())+'.csv','text/csv;charset=utf-8');
+};
+
+/* ===================== SERVIÇOS ===================== */
+const catOpts=sel=>Object.keys(CATS).map(c=>`<option ${c===sel?'selected':''}>${c}</option>`).join('');
+function renderCat(){
+ $('nCat').innerHTML=catOpts('Instalação');
+ $('tCat').innerHTML=Store.all('services').map(s=>`<tr>
+  <td><input value="${esc(s.icon)}" style="width:54px" onchange="upd('${s.id}','icon',this.value)"></td>
+  <td><input value="${esc(s.name)}" style="width:100%" onchange="upd('${s.id}','name',this.value)"></td>
+  <td><select onchange="upd('${s.id}','category',this.value)">${catOpts(s.category)}</select></td>
+  <td><input type="number" step="0.01" min="0" value="${s.value}" style="width:110px" onchange="upd('${s.id}','value',this.value)"></td>
+  <td class="r"><button class="btn sm del" onclick="rmSvc('${s.id}')">Remover</button></td></tr>`).join('');
+}
+const upd=guard(async(id,k,v)=>{
+ const val=k==='value'?Math.max(0,parseFloat(String(v).replace(',','.'))||0):String(v).trim();
+ await Store.update('services',id,{[k]:val});toast('Salvo');
+});
+const rmSvc=guard(async id=>{
+ const s=Store.get('services',id);
+ if(!confirm(`Remover "${s.name}" da lista? Os lançamentos antigos continuam no relatório.`))return;
+ await Store.remove('services',id);renderCat();
+});
+$('addSvc').onclick=guard(async()=>{
+ const name=$('nNome').value.trim(),value=parseFloat($('nVal').value.replace(',','.'));
+ if(!name||isNaN(value)){toast('Preencha nome e valor');return}
+ await Store.add('services',{icon:$('nIcon').value.trim()||'🔹',name,category:$('nCat').value,value});$('nNome').value=$('nVal').value=$('nIcon').value='';renderCat();toast('Serviço adicionado');
+});
+
+/* ===================== BACKUP E PERFIL ===================== */
+function baixar(txt,nome,tipo){
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:tipo}));a.download=nome;a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+$('exp').onclick=()=>baixar(JSON.stringify(Store.snapshot(),null,1),'backup-servicos-'+iso(new Date())+'.json','application/json');
+function normalize(d){
+ const now=new Date().toISOString();
+ const base=x=>({...x,id:x.id||uid(),createdAt:x.createdAt||now,updatedAt:x.updatedAt||now});
+ return{schema:SCHEMA,
+  users:(d.users||[]).map(base),
+  settings:(d.settings||[]).map(base),
+  services:(d.services||[]).map(x=>({...base(x),category:x.category||guessCat(x.name)})),
+  entries:(d.entries||[]).map(x=>({...base(x),userId:x.userId||USER_ID,note:x.note||'',category:x.category||guessCat(x.name)}))};
+}
+$('imp').onchange=e=>{
+ const f=e.target.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=guard(async()=>{
+  let d;try{d=JSON.parse(r.result);if(!Array.isArray(d.services)||!Array.isArray(d.entries))throw 0}catch(x){toast('Arquivo de backup inválido');return}
+  if(!confirm('Isso substitui todos os dados atuais pelos do backup. Continuar?'))return;
+  await Store.replaceAll(normalize(d));await ensureBase();applySettings();renderAll();toast('Backup restaurado');
+ });
+ r.readAsText(f);e.target.value='';
+};
+$('pSalvar').onclick=guard(async()=>{
+ await Store.update('users',USER_ID,{name:$('pNome').value.trim()});renderWho();toast('Nome salvo');
+});
+function renderInfo(){
+ $('stInfo').innerHTML=`Modo: <b>${esc(Store.adapter.name)}</b><br>Esquema: v${SCHEMA}<br>`+
+  COLS.map(c=>`${c}: <b>${Store.all(c).length}</b>`).join(' · ');
+ $('pNome').value=(Store.get('users',USER_ID)||{}).name||'';
+}
+function renderWho(){const u=Store.get('users',USER_ID);$('who').textContent=u&&u.name?'👤 '+u.name:'👤 Usuário local'}
+
+/* ===================== TELA INICIAL ===================== */
+let tw;
+function type(el,txt){clearInterval(tw);el.textContent='';let i=0;tw=setInterval(()=>{el.textContent=txt.slice(0,++i);if(i>=txt.length)clearInterval(tw)},45)}
+const salut=()=>{const h=new Date().getHours();return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'};
+
+function openWelcome(mode,prevVisit){
+ const u=Store.get('users',USER_ID)||{};
+ $('wSalut').textContent=salut();
+ 
+ const hasName = !!(u.name && u.name.trim());
+ $('wForm').style.display = hasName ? 'none' : 'block';
+ $('wStats').style.display = 'grid';
+ 
+ if(!hasName){
+  type($('wTitle'),'Bem-vindo!');$('wMsg').textContent='Vamos organizar seus serviços e valores, do jeito mais simples.';
+  $('wGo').textContent='Começar →';
+  $('wName').value = u.name || '';
+  setTimeout(()=>$('wName').focus(),300);
+ }else{
+  type($('wTitle'),'Olá novamente, '+u.name+'!');
+  $('wMsg').textContent='Que bom te ver de novo. Aqui vai o resumo rápido:';
+  $('wGo').textContent='Entrar →';
+  setTimeout(()=>$('wGo').focus(),300);
+ }
+
+ const hoje=iso(new Date()),mes=hoje.slice(0,7);
+ const es=Store.all('entries'),eh=es.filter(e=>e.date===hoje),em=es.filter(e=>e.date.startsWith(mes));
+ const sum=l=>l.reduce((a,e)=>a+sub(e),0);
+ $('wStats').innerHTML=`<div><small>Hoje</small><b>${brl(sum(eh))}</b></div><div><small>Serviços hoje</small><b>${eh.reduce((a,e)=>a+e.qty,0)}</b></div><div><small>No mês</small><b>${brl(sum(em))}</b></div>`;
+ const pv=prevVisit?new Date(prevVisit):null;
+ $('wFoot').textContent=pv?`Último acesso: ${pv.toLocaleDateString('pt-BR')} às ${pad(pv.getHours())}:${pad(pv.getMinutes())}`:'Seus dados ficam salvos neste computador.';
+
+ $('welcome').classList.remove('hide');
+}
+
+$('wGo').onclick=guard(async()=>{
+ const inputName = $('wName').value.trim();
+ if(inputName){
+   await Store.update('users',USER_ID,{name:inputName});
+   renderWho();
+ }
+ $('welcome').classList.add('hide');
+});
+
+$('wName').onkeydown=e=>{if(e.key==='Enter')$('wGo').click()};$('home').onclick=()=>openWelcome('back',(Store.get('users',USER_ID)||{}).prevVisit||null);
+
+/* ===================== INÍCIO ===================== */
+function renderAll(){renderGrid();renderDay();renderRel();renderCat();renderInfo();renderWho()}
+function applySettings(){
+ const s=Store.get('settings','app')||{};
+ document.body.classList.toggle('pinned',!!s.pinned);$('pin').title=s.pinned?'Desafixar menu':'Fixar menu';
+ document.body.classList.toggle('side-hidden',!!s.sideHidden);
+ let saved=null;try{saved=localStorage.getItem('rs-theme')}catch(e){}
+ const th=saved||s.theme;if(th==='light'||th==='dark')paintTheme(th);
+}
+async function ensureBase(){
+ if(!Store.get('settings','app'))await Store.add('settings',{id:'app',pinned:false,sideHidden:false});
+ if(!Store.all('services').length&&!Store.all('entries').length)
+  for(const[icon,name,value]of PADRAO)await Store.add('services',{icon,name,category:guessCat(name),value});
+}
+async function migrateV1(){
+ if(Store.all('services').length||Store.all('entries').length)return;
+ try{const d=JSON.parse(localStorage.getItem('registro-servicos-v1'));
+  if(d&&Array.isArray(d.services)&&Array.isArray(d.entries)){await Store.replaceAll(normalize(d));toast('Dados da versão anterior importados')}}catch(e){}
+}
+(async function main(){
+ try{
+  await Store.init();await migrateV1();await ensureBase();
+  const now=new Date().toISOString(),u=Store.get('users',USER_ID);
+  let mode='first',prev=null;
+  if(u){mode='back';prev=u.lastVisit;await Store.update('users',USER_ID,{prevVisit:u.lastVisit,lastVisit:now,visits:(u.visits||0)+1})}
+  else await Store.add('users',{id:USER_ID,name:'',firstVisit:now,lastVisit:now,prevVisit:null,visits:1});
+  applySettings();renderAll();openWelcome(mode,prev);
+ }catch(e){console.error(e);document.body.insertAdjacentHTML('afterbegin','<p style="padding:30px">Não foi possível iniciar o armazenamento deste navegador. Tente abrir o arquivo no Chrome ou Edge.</p>')}
+})();
+</script>
+</body>
+</html>
