@@ -39,20 +39,28 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;
 /* ===== SIDEBAR ===== */
 #side{position:fixed;left:0;top:0;bottom:0;width:var(--sw);z-index:50;display:flex;flex-direction:column;
  background:var(--side-bg);backdrop-filter:blur(14px);border-right:1px solid var(--line);
- transition:width .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s;overflow:hidden}
+ transition:width .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s;overflow:hidden}
 #side:hover,body.pinned #side{width:var(--swo);box-shadow:8px 0 40px var(--shadow)}
 body.pinned #side{box-shadow:none}
+
+/* Estado Oculto da Sidebar */
+body.side-hidden #side{transform:translateX(-100%);box-shadow:none}
+body.side-hidden #side:hover{transform:translateX(0);width:var(--swo);box-shadow:8px 0 40px var(--shadow)}
+
 .lbl{white-space:nowrap;opacity:0;transform:translateX(-8px);transition:opacity .22s .04s,transform .22s .04s}
 #side:hover .lbl,body.pinned #side .lbl{opacity:1;transform:none}
-.brand{display:flex;align-items:center;gap:12px;padding:16px 14px;border-bottom:1px solid var(--line);min-height:68px}
+.brand{display:flex;align-items:center;gap:8px;padding:16px 10px;border-bottom:1px solid var(--line);min-height:68px}
 .logo{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;
  background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 0 18px rgba(34,211,238,.45)}
 .brand b{display:block;line-height:1.1}.brand small{color:var(--mute);font-size:12px}
-#pin{margin-left:auto;flex:none;width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;
- opacity:0;transition:opacity .22s,transform .25s,background .2s,box-shadow .2s}
-#side:hover #pin,body.pinned #pin{opacity:1}
-#pin:hover{background:rgba(34,211,238,.15)}
+.brand-actions{margin-left:auto;display:flex;gap:4px;align-items:center;opacity:0;transition:opacity .22s}
+#side:hover .brand-actions,body.pinned .brand-actions{opacity:1}
+
+.side-btn-icon{flex:none;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;
+ display:grid;place-items:center;font-size:14px;padding:0;transition:transform .25s,background .2s,box-shadow .2s}
+.side-btn-icon:hover{background:rgba(34,211,238,.15)}
 body.pinned #pin{background:rgba(34,211,238,.22);box-shadow:0 0 12px rgba(34,211,238,.5);transform:rotate(-35deg)}
+
 #side nav{display:flex;flex-direction:column;gap:6px;padding:14px 10px;flex:1}
 .nb{--c:var(--acc);position:relative;display:flex;align-items:center;gap:14px;padding:11px 12px;border-radius:12px;border:0;background:transparent;color:var(--mute);
  font:inherit;font-size:15px;cursor:pointer;text-align:left;overflow:hidden;transition:color .2s,background .25s}
@@ -68,9 +76,21 @@ body.pinned #pin{background:rgba(34,211,238,.22);box-shadow:0 0 12px rgba(34,211
 #side .foot{padding:10px;border-top:1px solid var(--line)}
 .who{font-size:13px;color:var(--mute);padding:8px 12px}
 
+/* Botão Flutuante para Mostrar Menu quando Oculto */
+#showSideBtn{position:fixed;left:12px;top:14px;z-index:40;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);
+ background:var(--side-bg);color:var(--ink);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:18px;
+ backdrop-filter:blur(14px);box-shadow:0 4px 16px var(--shadow);transition:transform .2s,background .2s}
+#showSideBtn:hover{transform:scale(1.08);background:var(--hover)}
+body.side-hidden #showSideBtn{display:flex}
+
+/* Edge trigger zone para abrir sidebar passando o mouse no canto esquerdo */
+#sideEdgeTrigger{position:fixed;left:0;top:0;bottom:0;width:15px;z-index:45;display:none}
+body.side-hidden #sideEdgeTrigger{display:block}
+
 /* ===== LAYOUT ===== */
 #app{padding-left:var(--sw);transition:padding-left .28s cubic-bezier(.2,.8,.2,1)}
 body.pinned #app{padding-left:var(--swo)}
+body.side-hidden #app{padding-left:0}
 main{max-width:1180px;margin:0 auto;padding:22px 20px 60px}
 .tab{display:none}
 .tab.on{display:block;animation:enter .45s cubic-bezier(.2,.8,.2,1)}
@@ -231,12 +251,12 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
 .toast.on{opacity:1;transform:translateX(-50%)}
 .printonly{display:none}
 
-@media(max-width:700px){#side{width:56px}#app{padding-left:56px!important}main{padding:16px 12px 50px}.bar{grid-template-columns:80px 1fr 90px}}
+@media(max-width:700px){#side{width:56px}#app{padding-left:56px!important}body.side-hidden #app{padding-left:0!important}main{padding:16px 12px 50px}.bar{grid-template-columns:80px 1fr 90px}}
 
 /* ===== IMPRESSÃO (fundo branco) ===== */
 @media print{
  :root,html[data-theme="light"],html[data-theme="dark"]{--bg:#fff;--panel:#fff;--panel2:#f4f6fa;--line:#ccd2dd;--ink:#111;--mute:#555;--acc:#0a6e8a;--ok:#0a7a4a}
- body::before,#side,#welcome,.toast,.noprint{display:none!important}
+ body::before,#side,#welcome,.toast,.noprint,#showSideBtn,#sideEdgeTrigger{display:none!important}
  #app{padding-left:0!important}
  .card{border:0;padding:0;backdrop-filter:none}
  .tab{display:none!important}#tab-rel{display:block!important}
@@ -246,6 +266,10 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
 </style>
 </head>
 <body>
+
+<!-- BOTÃO E ÁREA DE TRIGGER PARA EXIBIR A BARRA LATERAL -->
+<button id="showSideBtn" title="Mostrar menu lateral">☰</button>
+<div id="sideEdgeTrigger"></div>
 
 <!-- TELA INICIAL -->
 <div id="welcome">
@@ -266,7 +290,10 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
  <div class="brand">
   <div class="logo">⚡</div>
   <div class="lbl"><b>Registro</b><small>de Serviços</small></div>
-  <button id="pin" title="Fixar menu">📌</button>
+  <div class="brand-actions">
+   <button id="pin" class="side-btn-icon" title="Fixar menu">📌</button>
+   <button id="hideSide" class="side-btn-icon" title="Ocultar menu lateral">👁️</button>
+  </div>
  </div>
  <nav>
   <button class="nb on" data-tab="lan" style="--c:#22d3ee"><i>➕</i><span class="lbl">Lançar</span></button>
@@ -407,7 +434,7 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
    - users:    {id:'local', name, firstVisit, lastVisit, visits}
    - services: {id, icon, name, category, value}
    - entries:  {id, userId, date:'AAAA-MM-DD', serviceId, icon, name, category, value, qty, note}
-   - settings: {id:'app', pinned}
+   - settings: {id:'app', pinned, sideHidden}
    Um ADAPTER implementa: getAll(col), upsert(col,rec), remove(col,id), replaceAll(snapshot).
    Hoje: LocalAdapter (localStorage). Amanhã: RemoteAdapter (API/DB) -> Store.adapter = RemoteAdapter
    ===================================================================== */
@@ -421,13 +448,7 @@ const LocalAdapter={
  async remove(col,id){const d=this._r();d[col]=(d[col]||[]).filter(x=>x.id!==id);this._w(d)},
  async replaceAll(s){this._w(s)}
 };
-/* Exemplo de adaptador para uma API/banco (não está ativo):
-const RemoteAdapter={name:'API remota',base:'/api',
- async getAll(col){return (await fetch(`${this.base}/${col}`)).json()},
- async upsert(col,rec){await fetch(`${this.base}/${col}/${rec.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)})},
- async remove(col,id){await fetch(`${this.base}/${col}/${id}`,{method:'DELETE'})},
- async replaceAll(s){await fetch(`${this.base}/import`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(s)})}};
-*/
+
 const COLS=['users','services','entries','settings'];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const Store={
@@ -483,13 +504,29 @@ document.querySelectorAll('#side nav .nb').forEach(b=>{
 $('pin').onclick=guard(async e=>{e.stopPropagation();const p=!document.body.classList.contains('pinned');
  document.body.classList.toggle('pinned',p);await Store.update('settings','app',{pinned:p});$('pin').title=p?'Desafixar menu':'Fixar menu'});
 
+/* Ocultar / Mostrar Menu Lateral */
+async function toggleSideHidden(hide){
+ const isHidden = hide !== undefined ? hide : !document.body.classList.contains('side-hidden');
+ document.body.classList.toggle('side-hidden', isHidden);
+ const appSetting = Store.get('settings','app');
+ if(appSetting) await Store.update('settings','app',{sideHidden: isHidden});
+}
+
+$('hideSide').onclick = guard(async e => {
+ e.stopPropagation();
+ await toggleSideHidden(true);
+ toast('Barra lateral ocultada');
+});
+
+$('showSideBtn').onclick = guard(async () => {
+ await toggleSideHidden(false);
+});
 
 /* ===================== TEMA ===================== */
 function paintTheme(t){
  document.documentElement.setAttribute('data-theme',t);
  $('themeIcon').textContent=t==='light'?'☀️':'🌙';
- $('themeLbl').textContent=t==='light'?'Tema claro':'Tema escuro';
- $('themeBtn').title=t==='light'?'Mudar para o tema escuro':'Mudar para o tema claro';
+ $('themeLbl').textContent=t==='light'?'Tema claro':'Tema escuro';$('themeBtn').title=t==='light'?'Mudar para o tema escuro':'Mudar para o tema claro';
 }
 function currentTheme(){return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark'}
 $('themeBtn').onclick=guard(async()=>{
@@ -508,13 +545,11 @@ let selectedService=null;
 const draftQty={};
 const draftNotes={};
 
-$('dia').value=iso(new Date());
-$('dia').onchange=renderDay;
+$('dia').value=iso(new Date());$('dia').onchange=renderDay;
 $('hoje').onclick=()=>{$('dia').value=iso(new Date());renderDay()};
 $('ontem').onclick=()=>{const d=new Date();d.setDate(d.getDate()-1);$('dia').value=iso(d);renderDay()};
 
 function syncNotes(id){
- // lê do DOM apenas se as caixas existirem e tiverem conteúdo (o rascunho principal é mantido por noteChanged)
  const box=$('notes-'+id);
  if(!box)return;
  const ins=box.querySelectorAll('input');
@@ -528,9 +563,6 @@ function ensureNotes(id,qty){
  draftNotes[id]=arr;
 }
 
-/* Atualiza as caixas de observação SEM recriar as que já existem.
-   (Antes tudo era recriado com innerHTML a cada clique, o que tirava o foco do campo
-   assim que o botão do mouse era solto.) */
 function renderNotes(id){
  const box=$('notes-'+id);
  if(!box)return;
@@ -562,7 +594,7 @@ function qtyChanged(id){
  const i=$('q-'+id);
  const qty=Math.max(0,parseInt(i.value)||0);
  draftQty[id]=qty;
- if(i.value!==''&&String(qty)!==i.value)i.value=qty;   // não reescreve enquanto a pessoa digita
+ if(i.value!==''&&String(qty)!==i.value)i.value=qty;
  markSelected(id);
  renderNotes(id);
 }
@@ -574,7 +606,7 @@ function markSelected(id){
 }
 
 function selectService(id){
- if(selectedService===id&&$('c-'+id)&&$('c-'+id).classList.contains('selected'))return;  // já selecionado: não mexe em nada
+ if(selectedService===id&&$('c-'+id)&&$('c-'+id).classList.contains('selected'))return;
  markSelected(id);
  const input=$('q-'+id);
  if(input)input.value=Math.max(0,Number(draftQty[id]||0));
@@ -588,18 +620,15 @@ function renderGrid(){
  const sv=Store.all('services');
  const cats=Object.keys(CATS).filter(c=>sv.some(s=>s.category===c));
  if(openCat&&!cats.includes(openCat))openCat=null;
- // botões de categoria
  $('cats').innerHTML=cats.length?cats.map(c=>{
   const n=sv.filter(s=>s.category===c).length;
   return `<button type="button" class="cat" style="--c:${color(c)}" onclick="openCategory('${c}')">
    <span class="ci">${CAT_ICON[c]||'🔹'}</span><b>${esc(c)}</b><small>${n} ${n===1?'serviço':'serviços'}</small></button>`}).join('')
   :'<div class="empty">Nenhum serviço cadastrado. Adicione na aba "Serviços e valores".</div>';
- // itens da categoria aberta
  $('paneCats').hidden=!!openCat;
  $('paneItems').hidden=!openCat;
  if(!openCat)return;
- $('catTitle').style.setProperty('--c',color(openCat));
- $('backCats').style.setProperty('--c',color(openCat));
+ $('catTitle').style.setProperty('--c',color(openCat));$('backCats').style.setProperty('--c',color(openCat));
  const lista=sv.filter(s=>s.category===openCat);
  $('catTitle').innerHTML=`${CAT_ICON[openCat]||'🔹'} ${esc(openCat)} <span>${lista.length} ${lista.length===1?'serviço':'serviços'}</span>`;
  $('grid').innerHTML=lista.map((s,i)=>{
@@ -625,7 +654,6 @@ function renderGrid(){
  lista.forEach(s=>renderNotes(s.id));
 }
 
-/* transição entre a tela de categorias e a lista de itens */
 function swapPanes(fromEl,toEl,dir){
  if(navBusy)return;navBusy=true;
  fromEl.classList.add(dir==='fwd'?'out-fwd':'out-back');
@@ -639,7 +667,6 @@ function swapPanes(fromEl,toEl,dir){
 function openCategory(c){
  if(navBusy)return;
  openCat=c;renderGrid();
- // renderGrid já mostra o painel de itens; refaz o estado para animar a troca
  $('paneItems').hidden=true;$('paneCats').hidden=false;
  swapPanes($('paneCats'),$('paneItems'),'fwd');
 }
@@ -647,9 +674,7 @@ function closeCategory(){
  if(navBusy||!openCat)return;
  if(selectedService)syncNotes(selectedService);
  swapPanes($('paneItems'),$('paneCats'),'back');
- setTimeout(()=>{openCat=null;$('paneCats').hidden=false},195);
-}
-$('backCats').onclick=closeCategory;
+ setTimeout(()=>{openCat=null;$('paneCats').hidden=false},195); }$('backCats').onclick=closeCategory;
 
 function step(id,d){
  markSelected(id);
@@ -693,7 +718,6 @@ const addEntry=guard(async id=>{
  ensureNotes(id,qty);
  const notes=[...draftNotes[id]];
 
- // Cada quantidade vira um lançamento independente, com sua própria observação.
  for(let i=0;i<qty;i++){
    const r=await Store.add('entries',{
      userId:USER_ID,date:dia,serviceId:id,icon:s.icon,name:s.name,
@@ -735,11 +759,10 @@ function range(){
  else if(p==='semana'){const d=new Date(h);d.setDate(h.getDate()-((h.getDay()+6)%7));a=iso(d);const e=new Date(d);e.setDate(d.getDate()+6);b=iso(e)}
  else if(p==='mes'){a=iso(new Date(h.getFullYear(),h.getMonth(),1));b=iso(new Date(h.getFullYear(),h.getMonth()+1,0))}
  else if(p==='mesant'){a=iso(new Date(h.getFullYear(),h.getMonth()-1,1));b=iso(new Date(h.getFullYear(),h.getMonth(),0))}
- else{a=$('de').value||'0000-01-01';b=$('ate').value||'9999-12-31'}
+ else{a=$('de').value\vert{}\vert{}'0000-01-01';b=$('ate').value||'9999-12-31'}
  return[a,b];
 }
-$('per').onchange=()=>{$('customBox').style.display=$('per').value==='custom'?'flex':'none';renderRel()};
-$('de').onchange=$('ate').onchange=$('busca').oninput=renderRel;
+$('per').onchange=()=>{$('customBox').style.display=$('per').value==='custom'?'flex':'none';renderRel()};$('de').onchange=$('ate').onchange=$('busca').oninput=renderRel;
 function dataRel(){
  const[a,b]=range(),q=$('busca').value.trim().toLowerCase();
  const es=Store.all('entries').filter(e=>e.date>=a&&e.date<=b&&(!q||(e.name+' '+(e.note||'')+' '+(e.category||'')).toLowerCase().includes(q)))
@@ -763,8 +786,7 @@ function renderRel(){
  $('tSvc').innerHTML=ls.length?ls.map(s=>`<tr><td>${esc(s.icon)} ${esc(s.name)}</td><td class="r num">${s.q}</td><td class="r num">${brl(s.value)}</td><td class="r num">${brl(Math.round(s.q*s.value*100)/100)}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">Sem lançamentos no período.</td></tr>';
  $('tDet').innerHTML=es.length?es.map(e=>`<tr><td class="num">${br(e.date)}</td><td>${esc(e.icon)} ${esc(e.name)}</td><td class="r num">${e.qty}</td><td>${esc(e.note||'')}</td><td class="r num">${brl(sub(e))}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">Sem lançamentos no período.</td></tr>';
 }
-$('imprimir').onclick=()=>window.print();
-$('csv').onclick=()=>{
+$('imprimir').onclick=()=>window.print();$('csv').onclick=()=>{
  const{es}=dataRel();if(!es.length){toast('Nada para exportar');return}
  const f=n=>n.toFixed(2).replace('.',',');
  const linhas=[['Data','Categoria','Serviço','Quantidade','Valor unitário','Subtotal','Observação']]
@@ -796,8 +818,7 @@ const rmSvc=guard(async id=>{
 $('addSvc').onclick=guard(async()=>{
  const name=$('nNome').value.trim(),value=parseFloat($('nVal').value.replace(',','.'));
  if(!name||isNaN(value)){toast('Preencha nome e valor');return}
- await Store.add('services',{icon:$('nIcon').value.trim()||'🔹',name,category:$('nCat').value,value});
- $('nNome').value=$('nVal').value=$('nIcon').value='';renderCat();toast('Serviço adicionado');
+ await Store.add('services',{icon:$('nIcon').value.trim()||'🔹',name,category:$('nCat').value,value});$('nNome').value=$('nVal').value=$('nIcon').value='';renderCat();toast('Serviço adicionado');
 });
 
 /* ===================== BACKUP E PERFIL ===================== */
@@ -844,11 +865,9 @@ function openWelcome(mode,prevVisit){
  wMode=mode;const u=Store.get('users',USER_ID)||{};
  $('wSalut').textContent=salut();
  const first=mode==='first';
- $('wForm').style.display=first?'block':'none';
- $('wStats').style.display=first?'none':'grid';
+ $('wForm').style.display=first?'block':'none';$('wStats').style.display=first?'none':'grid';
  if(first){
-  type($('wTitle'),'Bem-vindo!');
-  $('wMsg').textContent='Vamos organizar seus serviços e valores, do jeito mais simples.';
+  type($('wTitle'),'Bem-vindo!');$('wMsg').textContent='Vamos organizar seus serviços e valores, do jeito mais simples.';
   $('wGo').textContent='Começar →';
   $('wFoot').textContent='Seus dados ficam salvos neste computador.';
   $('wName').value='';setTimeout(()=>$('wName').focus(),300);
@@ -862,32 +881,28 @@ function openWelcome(mode,prevVisit){
   $('wStats').innerHTML=`<div><small>Hoje</small><b>${brl(sum(eh))}</b></div><div><small>Serviços hoje</small><b>${eh.reduce((a,e)=>a+e.qty,0)}</b></div><div><small>No mês</small><b>${brl(sum(em))}</b></div>`;
   const pv=prevVisit?new Date(prevVisit):null;
   $('wFoot').textContent=pv?`Último acesso: ${pv.toLocaleDateString('pt-BR')} às ${pad(pv.getHours())}:${pad(pv.getMinutes())}`:'';
-  setTimeout(()=>$('wGo').focus(),300);
- }
- $('welcome').classList.remove('hide');
+  setTimeout(()=>$('wGo').focus(),300);  }$('welcome').classList.remove('hide');
 }
 $('wGo').onclick=guard(async()=>{
- if(wMode==='first'){const n=$('wName').value.trim();if(n){await Store.update('users',USER_ID,{name:n});renderWho()}}
- $('welcome').classList.add('hide');
+ if(wMode==='first'){const n=$('wName').value.trim();if(n){await Store.update('users',USER_ID,{name:n});renderWho()}}$('welcome').classList.add('hide');
 });
-$('wName').onkeydown=e=>{if(e.key==='Enter')$('wGo').click()};
-$('home').onclick=()=>openWelcome('back',(Store.get('users',USER_ID)||{}).prevVisit||null);
+$('wName').onkeydown=e=>{if(e.key==='Enter')$('wGo').click()};$('home').onclick=()=>openWelcome('back',(Store.get('users',USER_ID)||{}).prevVisit||null);
 
 /* ===================== INÍCIO ===================== */
 function renderAll(){renderGrid();renderDay();renderRel();renderCat();renderInfo();renderWho()}
 function applySettings(){
  const s=Store.get('settings','app')||{};
  document.body.classList.toggle('pinned',!!s.pinned);$('pin').title=s.pinned?'Desafixar menu':'Fixar menu';
+ document.body.classList.toggle('side-hidden',!!s.sideHidden);
  let saved=null;try{saved=localStorage.getItem('rs-theme')}catch(e){}
  const th=saved||s.theme;if(th==='light'||th==='dark')paintTheme(th);
 }
 async function ensureBase(){
- if(!Store.get('settings','app'))await Store.add('settings',{id:'app',pinned:false});
+ if(!Store.get('settings','app'))await Store.add('settings',{id:'app',pinned:false,sideHidden:false});
  if(!Store.all('services').length&&!Store.all('entries').length)
   for(const[icon,name,value]of PADRAO)await Store.add('services',{icon,name,category:guessCat(name),value});
 }
 async function migrateV1(){
- // traz dados da primeira versão do protótipo, se existirem
  if(Store.all('services').length||Store.all('entries').length)return;
  try{const d=JSON.parse(localStorage.getItem('registro-servicos-v1'));
   if(d&&Array.isArray(d.services)&&Array.isArray(d.entries)){await Store.replaceAll(normalize(d));toast('Dados da versão anterior importados')}}catch(e){}
