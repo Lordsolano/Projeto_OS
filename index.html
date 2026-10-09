@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070b14">
 <title>Registro de Serviços</title>
 <script>try{var t=localStorage.getItem('rs-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
@@ -235,12 +236,51 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
 .toast.on{opacity:1;transform:translateX(-50%)}
 .printonly{display:none}
 
-@media(max-width:700px){#side{width:56px}#side .lbl,#side .brand>div:not(.logo){display:none}#app{padding-left:56px!important}main{padding:16px 12px 50px}.bar{grid-template-columns:80px 1fr 90px}}
+/* ===== MOBILE: barra de abas embaixo, alvos de toque maiores ===== */
+#miniTotal{display:none}
+@media(max-width:700px){
+ #side,body.menu-hidden #side{top:auto;left:0;right:0;bottom:0;width:100%;height:calc(64px + env(safe-area-inset-bottom));flex-direction:row;align-items:stretch;
+  border-right:0;border-top:1px solid var(--line);transform:none;visibility:visible;padding-bottom:env(safe-area-inset-bottom);overflow:visible;box-shadow:0 -8px 30px var(--shadow)}
+ #side .brand,#side .who,#menuHide,#menuShow,body.menu-hidden #menuShow{display:none!important}
+ #side nav,#side .foot{display:contents}
+ .nb{flex:1;min-width:0;flex-direction:column;justify-content:center;align-items:center;gap:2px;padding:6px 2px;border-radius:0;text-align:center}
+ .nb i{font-size:21px;width:auto}
+ .nb:hover i{transform:none}
+ .nb .lbl{display:block;font-size:10.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ .nb .xs{display:none}
+ .nb::before{left:22%;right:22%;top:0;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px;transform:scaleX(0)}
+ .nb.on::before{transform:scaleX(1)}
+ #app,body.menu-hidden #app{padding-left:0!important}
+ main,body.menu-hidden main{padding:14px 12px calc(96px + env(safe-area-inset-bottom))}
+ .ph{flex-direction:column;gap:2px;margin-bottom:12px}.ph h1{font-size:21px}
+ .card{padding:14px;border-radius:14px}
+ .total{font-size:30px}
+ .btn{min-height:44px}.btn.sm{min-height:40px;min-width:40px}
+ input:not([type=checkbox]),select{font-size:16px;min-height:44px}
+ .step button{width:46px;height:46px;font-size:22px}
+ .step input{width:72px;font-size:18px}
+ .chip{padding:9px 14px}
+ .cats{grid-template-columns:repeat(2,1fr);gap:10px}
+ .cat{min-height:112px;padding:14px}
+ .grid{grid-template-columns:1fr}
+ .item{padding:12px 0}
+ .kpis{grid-template-columns:1fr 1fr}.kpi b{font-size:18px}
+ .bar{grid-template-columns:76px 1fr 88px;font-size:13px}
+ .card table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+ #busca{min-width:0!important;width:100%;flex-basis:100%}
+ .card.row>*{flex:1 1 auto}
+ .toast{bottom:calc(84px + env(safe-area-inset-bottom));max-width:90vw;text-align:center}
+ body[data-tab="lan"] #miniTotal{display:flex}
+ #miniTotal{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:45;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;
+  border:1px solid var(--acc);background:var(--side-bg);backdrop-filter:blur(14px);color:var(--ink);font:inherit;font-size:14px;cursor:pointer;box-shadow:0 0 20px rgba(34,211,238,.3)}
+ #miniTotal b{font-family:var(--mono);color:var(--ok);font-size:16px}
+ #miniTotal small{color:var(--mute)}
+}
 
 /* ===== IMPRESSÃO (fundo branco) ===== */
 @media print{
  :root,html[data-theme="light"],html[data-theme="dark"]{--bg:#fff;--panel:#fff;--panel2:#f4f6fa;--line:#ccd2dd;--ink:#111;--mute:#555;--acc:#0a6e8a;--ok:#0a7a4a}
- body::before,#side,#welcome,.toast,.noprint{display:none!important}
+ body::before,#side,#welcome,.toast,#miniTotal,#menuShow,.noprint{display:none!important}
  #app{padding-left:0!important}
  .card{border:0;padding:0;backdrop-filter:none}
  .tab{display:none!important}#tab-rel{display:block!important}
@@ -249,7 +289,7 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
 }
 </style>
 </head>
-<body>
+<body data-tab="lan">
 
 <!-- TELA INICIAL -->
 <div id="welcome">
@@ -274,12 +314,12 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
  <nav>
   <button class="nb on" data-tab="lan" style="--c:#22d3ee"><i>➕</i><span class="lbl">Lançar</span></button>
   <button class="nb" data-tab="rel" style="--c:#a78bfa"><i>📊</i><span class="lbl">Relatório</span></button>
-  <button class="nb" data-tab="svc" style="--c:#fbbf24"><i>🧰</i><span class="lbl">Serviços e valores</span></button>
-  <button class="nb" data-tab="bkp" style="--c:#34d399"><i>💾</i><span class="lbl">Backup e dados</span></button>
+  <button class="nb" data-tab="svc" style="--c:#fbbf24"><i>🧰</i><span class="lbl">Serviços<span class="xs"> e valores</span></span></button>
+  <button class="nb" data-tab="bkp" style="--c:#34d399"><i>💾</i><span class="lbl">Backup<span class="xs"> e dados</span></span></button>
  </nav>
  <div class="foot">
   <button class="nb" id="themeBtn" style="--c:#fbbf24" title="Alternar tema"><i id="themeIcon">🌙</i><span class="lbl" id="themeLbl">Tema escuro</span></button>
-  <button class="nb" id="home" style="--c:#f472b6"><i>🏠</i><span class="lbl">Tela inicial</span></button>
+  <button class="nb" id="home" style="--c:#f472b6"><i>🏠</i><span class="lbl">Início</span></button>
   <button class="nb" id="menuHide" style="--c:#94a3b8" title="Ocultar menu"><i>◀</i><span class="lbl">Ocultar menu</span></button>
   <div class="who lbl" id="who"></div>
  </div>
@@ -401,6 +441,7 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
 </section>
 
 </main></div>
+<button type="button" id="miniTotal" aria-label="Ver lançamentos do dia">🧾 <b id="miniVal">R$ 0,00</b> <small id="miniQtd"></small></button>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -479,6 +520,7 @@ const guard=fn=>async(...a)=>{try{await fn(...a)}catch(e){console.error(e);toast
 function goTab(name){
  document.querySelectorAll('#side nav .nb').forEach(x=>x.classList.toggle('on',x.dataset.tab===name));
  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+name));
+ document.body.dataset.tab=name;
  renderAll();window.scrollTo(0,0);
 }
 document.querySelectorAll('#side nav .nb').forEach(b=>{
@@ -523,6 +565,7 @@ const draftNotes={};
 
 $('dia').value=iso(new Date());
 $('dia').onchange=renderDay;
+$('miniTotal').onclick=()=>$('totDia').scrollIntoView({behavior:'smooth',block:'center'});
 $('hoje').onclick=()=>{$('dia').value=iso(new Date());renderDay()};
 $('ontem').onclick=()=>{const d=new Date();d.setDate(d.getDate()-1);$('dia').value=iso(d);renderDay()};
 
@@ -679,6 +722,8 @@ function renderDay(){
  anim($('totDia'),es.reduce((a,e)=>a+sub(e),0));
  const q=es.reduce((a,e)=>a+e.qty,0);
  $('qtdDia').textContent=q+(q===1?' serviço':' serviços');
+ $('miniVal').textContent=brl(es.reduce((a,e)=>a+sub(e),0));
+ $('miniQtd').textContent=q+(q===1?' serviço':' serviços');
  $('listaDia').innerHTML=es.length?es.map(e=>`
   <div class="item ${e.id===lastAdded?'new':''}">
    <div class="im">
