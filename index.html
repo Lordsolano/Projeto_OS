@@ -68,6 +68,19 @@ body.pinned #pin{background:rgba(34,211,238,.22);box-shadow:0 0 12px rgba(34,211
 #side .foot{padding:10px;border-top:1px solid var(--line)}
 .who{font-size:13px;color:var(--mute);padding:8px 12px}
 
+/* ===== OCULTAR / MOSTRAR MENU ===== */
+#side{transition:width .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s,transform .32s cubic-bezier(.2,.8,.2,1),visibility .32s}
+body.menu-hidden #side{transform:translateX(-100%);visibility:hidden;box-shadow:none}
+body.menu-hidden #app{padding-left:0!important}
+#menuShow{position:fixed;left:14px;top:14px;z-index:60;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);
+ background:var(--side-bg);backdrop-filter:blur(14px);color:var(--ink);font-size:20px;cursor:pointer;display:grid;place-items:center;
+ opacity:0;transform:translateX(-20px) scale(.9);pointer-events:none;visibility:hidden;
+ transition:opacity .25s,transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .2s,border-color .2s,visibility .3s}
+body.menu-hidden #menuShow{opacity:1;transform:none;pointer-events:auto;visibility:visible;box-shadow:0 0 18px rgba(34,211,238,.3)}
+body.menu-hidden #menuShow:hover{border-color:var(--acc);box-shadow:0 0 24px rgba(34,211,238,.55);transform:scale(1.08)}
+#menuShow:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+body.menu-hidden main{padding-top:70px}
+
 /* ===== LAYOUT ===== */
 #app{padding-left:var(--sw);transition:padding-left .28s cubic-bezier(.2,.8,.2,1)}
 body.pinned #app{padding-left:var(--swo)}
@@ -277,9 +290,11 @@ tbody tr{transition:background .15s}tbody tr:hover{background:var(--hover-soft)}
  <div class="foot">
   <button class="nb" id="themeBtn" style="--c:#fbbf24" title="Alternar tema"><i id="themeIcon">🌙</i><span class="lbl" id="themeLbl">Tema escuro</span></button>
   <button class="nb" id="home" style="--c:#f472b6"><i>🏠</i><span class="lbl">Tela inicial</span></button>
+  <button class="nb" id="menuHide" style="--c:#94a3b8" title="Ocultar menu"><i>◀</i><span class="lbl">Ocultar menu</span></button>
   <div class="who lbl" id="who"></div>
  </div>
 </aside>
+<button type="button" id="menuShow" title="Mostrar menu" aria-label="Mostrar menu">☰</button>
 
 <div id="app"><main>
 
@@ -483,6 +498,16 @@ document.querySelectorAll('#side nav .nb').forEach(b=>{
 $('pin').onclick=guard(async e=>{e.stopPropagation();const p=!document.body.classList.contains('pinned');
  document.body.classList.toggle('pinned',p);await Store.update('settings','app',{pinned:p});$('pin').title=p?'Desafixar menu':'Fixar menu'});
 
+
+/* ===================== OCULTAR / MOSTRAR MENU ===================== */
+const setMenuHidden=guard(async h=>{
+ document.body.classList.toggle('menu-hidden',h);
+ $('side').setAttribute('aria-hidden',h?'true':'false');
+ try{localStorage.setItem('rs-menu-hidden',h?'1':'0')}catch(e){}
+ if(Store.get('settings','app'))await Store.update('settings','app',{menuHidden:h});
+});
+$('menuHide').onclick=e=>{e.stopPropagation();setMenuHidden(true)};
+$('menuShow').onclick=()=>setMenuHidden(false);
 
 /* ===================== TEMA ===================== */
 function paintTheme(t){
@@ -878,6 +903,8 @@ function renderAll(){renderGrid();renderDay();renderRel();renderCat();renderInfo
 function applySettings(){
  const s=Store.get('settings','app')||{};
  document.body.classList.toggle('pinned',!!s.pinned);$('pin').title=s.pinned?'Desafixar menu':'Fixar menu';
+ let mh=s.menuHidden;try{const v=localStorage.getItem('rs-menu-hidden');if(v!==null)mh=v==='1'}catch(e){}
+ document.body.classList.toggle('menu-hidden',!!mh);$('side').setAttribute('aria-hidden',mh?'true':'false');
  let saved=null;try{saved=localStorage.getItem('rs-theme')}catch(e){}
  const th=saved||s.theme;if(th==='light'||th==='dark')paintTheme(th);
 }
